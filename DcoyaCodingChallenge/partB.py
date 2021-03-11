@@ -5,11 +5,14 @@ from time import strftime
 
 APP_B = Flask(__name__)
 
+logging.basicConfig(level=logging.DEBUG,
+                    format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+
 
 def app_log(msg):
     """
-    | ping check to see if the server is online
-    :return: str, identifier
+    | log to console
+    :param msg: message to be logged with
     """
     APP_B.logger.info(f'{request.remote_addr} {msg}')
 
@@ -75,7 +78,4 @@ def send_time():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG,
-                        format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
-    # todo: port for same cpu
     APP_B.run(port=5000)
