@@ -1,4 +1,5 @@
 import requests
+import json
 
 
 class Data:
@@ -103,6 +104,7 @@ def get_token():
     :return: token, False when the server is unreachable
     """
     while True:
+        rv = ''
         username = input('Enter username:')
         psw = input('Enter password:')
         try:
@@ -110,6 +112,8 @@ def get_token():
             return rv.json()['token']
         except requests.exceptions.ConnectionError:
             return False
+        except json.decoder.JSONDecodeError:
+            print(rv.text)
 
 
 def keyword_wait():
