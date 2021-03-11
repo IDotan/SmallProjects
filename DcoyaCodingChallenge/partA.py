@@ -9,8 +9,15 @@ JWT_SECRET = 'MySecretKey'
 JWT_ALGORITHM = 'HS256'
 TOKEN_EXP = 3600
 
+logging.basicConfig(level=logging.DEBUG,
+                    format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+
 
 def app_log(msg):
+    """
+    | log to console
+    :param msg: message to be logged with
+    """
     APP_A.logger.info(f'{request.remote_addr} {msg}')
 
 
@@ -60,7 +67,6 @@ def show():
     for users in authorized:
         for user in users:
             user_list.append(user)
-    # todo: ask wat is the 'list' to send
     app_log('Was sent all register users')
     return jsonify(user_list)
 
@@ -94,7 +100,4 @@ def authorize():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG,
-                        format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
-
     APP_A.run(port=80)
