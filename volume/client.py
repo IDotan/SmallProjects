@@ -11,6 +11,7 @@ def check_online(function):
             start.close()
         except OSError:
             start.close()
+
     return wrapper
 
 
@@ -22,43 +23,12 @@ class Window:
         self.__root.title('Online Volume Control')
         self.__root.geometry('+200+500')
         self.__connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__connect_frame = tkinter.Frame(self.__root)
-        self.__control_frame = tkinter.Frame(self.__root)
-
-        # connection frame
-        self.__ip_entry = tkinter.Entry(master=self.__connect_frame, background='black', foreground='white',
-                                        insertbackground='white', insertwidth=1, font=('calibri', 20, 'bold'),
-                                        justify='center', width=15)
-        self.__ip_entry.insert(0, self.__net_data.host)
-        self.__ip_entry.focus()
-
-        self.__connect_button = tkinter.Button(master=self.__connect_frame, text='Connect',
-                                               font=('calibri', 10, 'bold'), command=self.__login, padx=10,
-                                               bg='black', fg='white', activebackground='gray')
-        self.__error_label = tkinter.Label(master=self.__connect_frame, font=('calibri', 10, 'bold'),
-                                           text='', foreground='red')
-
-        # connected frame
-        self.__up_button = tkinter.Button(master=self.__control_frame, text='Up', font=('calibri', 12),
-                                          command=self.__up, padx=10, bg='black', fg='white',
-                                          activebackground='gray', repeatdelay=500, repeatinterval=250)
-        self.__down_button = tkinter.Button(master=self.__control_frame, text='Down', font=('calibri', 12),
-                                            command=self.__down, padx=10, bg='black', fg='white',
-                                            activebackground='gray')
-        self.__mute_button = tkinter.Button(master=self.__control_frame, text='Mute', font=('calibri', 12),
-                                            command=self.__mute, padx=10, bg='black', fg='white',
-                                            activebackground='gray')
-        self.__kill_button = tkinter.Button(master=self.__control_frame, text='Kill Zoom', font=('calibri', 12),
-                                            command=self.__kill_zoom, padx=10, bg='black', fg='red',
-                                            activebackground='gray')
-
-        self.__ip_entry.pack()
-        self.__connect_button.pack(pady=5)
-        self.__connect_frame.pack()
+        self.__connect_frame = self.__connection_frame()
+        self.__control_frame = self.__control_frame_func()
 
     class __NetData:
         def __init__(self):
-            self.host = ''
+            self.host = 'Offline'
             self.port = 56789
             self.__get_host()
 
@@ -66,29 +36,61 @@ class Window:
             temp = subprocess.run('arp -a', capture_output=True)
             for line in temp.stdout.decode('utf-8').split('\r'):
                 if '90-4c-e5-c6-c4-89' in line:
-                    self.host = line.strip().split(' ')[0]
-            if self.host == '':
-                self.host = 'Offline'
+                    self.host = line.strip().split(' ', 1)[0]
+
+    def __connection_frame(self):
+        frame = tkinter.Frame(master=self.__root)
+        ip_entry = tkinter.Entry(master=frame, background='black', foreground='white',
+                                 insertbackground='white', insertwidth=1, font=('calibri', 20, 'bold'),
+                                 justify='center', width=15)
+        ip_entry.insert(0, self.__net_data.host)
+        ip_entry.focus()
+        ip_entry.pack()
+
+        error_label = tkinter.Label(master=frame, font=('calibri', 10, 'bold'),
+                                    text='', foreground='red')
+        connect_button = tkinter.Button(master=frame, text='Connect',
+                                        font=('calibri', 10, 'bold'),
+                                        command=lambda: self.__login(ip_entry.get(), error_label), padx=10,
+                                        bg='black', fg='white', activebackground='gray')
+        connect_button.pack(pady=5)
+
+        return frame
+
+    def __control_frame_func(self):
+        frame = tkinter.Frame(master=self.__root)
+        up_button = tkinter.Button(master=frame, text='Up', font=('calibri', 12),
+                                   command=self.__up, padx=10, bg='black', fg='white',
+                                   activebackground='gray', repeatdelay=500, repeatinterval=250)
+        down_button = tkinter.Button(master=frame, text='Down', font=('calibri', 12),
+                                     command=self.__down, padx=10, bg='black', fg='white',
+                                     activebackground='gray')
+        mute_button = tkinter.Button(master=frame, text='Mute', font=('calibri', 12),
+                                     command=self.__mute, padx=10, bg='black', fg='white',
+                                     activebackground='gray')
+        kill_button = tkinter.Button(master=frame, text='Kill Zoom', font=('calibri', 12),
+                                     command=self.__kill_zoom, padx=10, bg='black', fg='red',
+                                     activebackground='gray')
+        up_button.pack(fill='x')
+        down_button.pack(fill='x')
+        mute_button.pack(fill='x')
+        kill_button.pack(fill='x')
+        return frame
 
     def __controls(self):
         self.__connect_frame.forget()
-        self.__up_button.pack(fill='x')
-        self.__down_button.pack(fill='x')
-        self.__mute_button.pack(fill='x')
-        self.__kill_button.pack(fill='x')
         self.__control_frame.pack(expand=True, fill='both')
 
-    def __login(self):
+    def __login(self, ip, error_label):
         def show_error(error):
-            self.__error_label.config(text=f'Cant connect. {error}')
-            self.__error_label.pack()
+            error_label.config(text=f'Cant connect. {error}')
+            error_label.pack()
 
         try:
-            self.__connection.connect((self.__ip_entry.get(), self.__net_data.port))
+            self.__connection.connect((ip, self.__net_data.port))
             self.__connection.send(b'ThisIsACode4334')
             data = self.__connection.recv(1024)
             if data == b'IN':
-                self.__online = True
                 self.__controls()
         except ConnectionRefusedError:
             show_error('Refused')
@@ -97,7 +99,8 @@ class Window:
         except socket.gaierror:
             pass
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self):
+        self.__connect_frame.pack()
         self.__root.mainloop()
 
     @check_online
