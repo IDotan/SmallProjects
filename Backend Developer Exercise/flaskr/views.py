@@ -95,8 +95,7 @@ def check_logged_url(cursor, url):
     if found:
         id_num = found[0]
         long_url = found[1]
-        clicks = found[3]
-        cursor.execute(f'UPDATE url set clicks = "{clicks + 1}" WHERE id = {id_num}')
+        cursor.execute(f'UPDATE url set clicks = clicks + 1  WHERE id = {id_num}')
         return long_url
     return False
 
@@ -108,7 +107,9 @@ def view_site(url):
     :param url: end of the short url
     :return: redirect to the long url, otherwise 'unknown url'
     """
-    redirect_url = check_logged_url(url)
-    if redirect_url:
-        return redirect(redirect_url)
+    url = url.split()
+    if len(url) == 1:
+        redirect_url = check_logged_url(url[0])
+        if redirect_url:
+            return redirect(redirect_url)
     return 'unknown url'
