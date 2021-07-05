@@ -51,9 +51,9 @@ def not_in_use(cursor, url):
     :return: True when not in the database
     """
     found = cursor.execute(f'SELECT short_url FROM url WHERE short_url="{url}"')
-    for row in found:
-        if row:
-            return False
+    found = found.fetchall()
+    if found:
+        return False
     return True
 
 
@@ -92,13 +92,13 @@ def check_logged_url(cursor, url):
     :return: string of the url to redirect to if found, False otherwise
     """
     found = cursor.execute(f'SELECT * FROM url WHERE short_url= "{url}"')
-    for row in found:
-        if row[0] is not None:
-            id_num = row[0]
-            long_url = row[1]
-            clicks = row[3]
-            cursor.execute(f'UPDATE url set clicks = "{clicks + 1}" WHERE id = {id_num}')
-            return long_url
+    found = found.fetchone()
+    if found:
+        id_num = found[0]
+        long_url = found[1]
+        clicks = found[3]
+        cursor.execute(f'UPDATE url set clicks = "{clicks + 1}" WHERE id = {id_num}')
+        return long_url
     return False
 
 
