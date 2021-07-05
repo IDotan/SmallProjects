@@ -1,13 +1,11 @@
 import sqlite3
 
-DATABASE = 'url.db'
 
-
-def create_db():
+def create_db(database):
     """
     | create the url.db when the db don't exists yet
     """
-    connection = sqlite3.connect(DATABASE)
+    connection = sqlite3.connect(database)
     cursor = connection.cursor()
     cursor.execute("""CREATE TABLE IF NOT EXISTS url
     (id INTEGER PRIMARY KEY,

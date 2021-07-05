@@ -1,6 +1,5 @@
-from flask import Blueprint, request, redirect
+from flask import Blueprint, request, redirect, current_app
 import sqlite3
-from .models import DATABASE
 from time import time
 from string import ascii_lowercase, ascii_uppercase
 from random import randint, shuffle
@@ -17,7 +16,7 @@ def work_on_db(function):
     :return: the function's return or none when there is no return
     """
     def wrapper(*args, **kwargs):
-        connection = sqlite3.connect(DATABASE)
+        connection = sqlite3.connect(current_app.config['DATABASE'])
         returned = function(connection, *args, **kwargs)
         connection.commit()
         connection.close()
@@ -51,7 +50,7 @@ def not_in_use(cursor, url):
     :return: True when not in the database
     """
     found = cursor.execute(f'SELECT short_url FROM url WHERE short_url="{url}"')
-    found = found.fetchall()
+    found = found.fetchone()
     if found:
         return False
     return True
@@ -91,7 +90,7 @@ def check_logged_url(cursor, url):
     :param url: end of short url to check
     :return: string of the url to redirect to if found, False otherwise
     """
-    found = cursor.execute(f'SELECT * FROM url WHERE short_url= "{url}"')
+    found = cursor.execute(f'SELECT id,long_url,short_url,clicks FROM url WHERE short_url= "{url}"')
     found = found.fetchone()
     if found:
         id_num = found[0]
