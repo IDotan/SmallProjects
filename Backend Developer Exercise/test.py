@@ -7,11 +7,9 @@ LONG_URL = 'https://www.linkedin.com/in/idotan/'
 
 
 def data_from_sqldb():
-    row = []
     connection = sqlite3.connect(f'Backend Developer Exercise/{DATABASE}')
     found = connection.execute(f'SELECT * FROM url WHERE long_url= "{LONG_URL}"')
-    for row in found:
-        row = row
+    row = found.fetchall()[-1]
     connection.commit()
     connection.close()
     return row
